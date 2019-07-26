@@ -1,57 +1,56 @@
 package org.apereo.cas.adaptors.swivel.web.flow.rest;
 
-import org.apereo.cas.configuration.model.support.mfa.SwivelMultifactorProperties;
+import java.io.IOException;
+import java.io.OutputStream;
 
-import lombok.RequiredArgsConstructor;
-import lombok.SneakyThrows;
-import lombok.val;
-import org.apache.commons.lang3.RandomUtils;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+
 import org.apache.commons.lang3.StringUtils;
+import org.apereo.cas.configuration.model.support.mfa.SwivelMultifactorProperties;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import javax.imageio.ImageIO;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import java.io.OutputStream;
-import java.net.URL;
+import com.swivelsecure.swivelclient.SwivelClient;
 
 /**
  * This is {@link SwivelTuringImageGeneratorController}.
  *
  * @author Misagh Moayyed
+ * @author Robin Withey
  * @since 5.2.0
  */
 @RestController
-@RequiredArgsConstructor
-public class SwivelTuringImageGeneratorController {
-    private final SwivelMultifactorProperties swivel;
+public class SwivelTuringImageGeneratorController extends AbstractSwivelController {
 
-    /**
-     * Generate.
-     *
-     * @param response the response
-     * @param request  the request
-     * @throws Exception the exception
-     */
-    @GetMapping(path = {"/swivel/turingImage"})
-    public void generate(final HttpServletResponse response, final HttpServletRequest request) throws Exception {
-        response.setContentType("image/png");
-        val principal = request.getParameter("principal");
-        if (StringUtils.isBlank(principal)) {
-            throw new IllegalArgumentException("No principal is specified in the turing image request");
-        }
-        generateImage(response.getOutputStream(), principal);
-    }
+	public SwivelTuringImageGeneratorController(SwivelMultifactorProperties props) {
+		super(props);
+	}
 
-    @SneakyThrows
-    private void generateImage(final OutputStream stream, final String principal) {
-        val params = String.format("?username=%s&random=%s", principal, RandomUtils.nextLong(1, Long.MAX_VALUE));
-        if (StringUtils.isBlank(swivel.getSwivelTuringImageUrl())) {
-            throw new IllegalArgumentException("Swivel turing image url cannot be blank and must be specified");
-        }
-        val url = new URL(swivel.getSwivelTuringImageUrl().concat(params));
-        val image = ImageIO.read(url);
-        ImageIO.write(image, "png", stream);
-    }
+	/**
+	 * Generate. Requests a TURing image.
+	 *
+	 * @param response the response. A TURing image is written to the response.
+	 * @param request  the request. Should contain the parameter "principal".
+	 * @throws Exception the exception
+	 */
+	@GetMapping("/swivel/turingImage")
+	public void generate(final HttpServletResponse response, final HttpServletRequest request) throws Exception {
+		response.setContentType("image/jpeg");
+		final String principal = request.getParameter("principal");
+		if (StringUtils.isBlank(principal)) {
+			throw new IllegalArgumentException("No principal is specified in the turing image request");
+		}
+		generateImageByUsername(response.getOutputStream(), principal);
+	}
+
+	private void generateImageByUsername(final OutputStream stream, final String principal) {
+		try {
+			SwivelClient client = getClient();
+			byte[] imageBytes = client.sendImageRequestByUsername(principal);
+			stream.write(imageBytes);
+		} catch (IOException e) {
+			throw new RuntimeException(e.getMessage(), e);
+		}
+	}
 }

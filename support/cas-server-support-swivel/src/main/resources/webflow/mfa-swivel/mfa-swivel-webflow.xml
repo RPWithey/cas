@@ -18,6 +18,9 @@
     <view-state id="viewLoginForm" view="casSwivelLoginView" model="credential">
         <binder>
             <binding property="token" required="true"/>
+            <binding property="voice" required="false"/>
+            <binding property="push" required="false"/>
+            <binding property="serviceId" required="false"/>
         </binder>
         <on-entry>
             <set name="viewScope.principal" value="conversationScope.authentication.principal"/>

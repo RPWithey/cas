@@ -20,9 +20,13 @@ import lombok.ToString;
 @NoArgsConstructor
 @EqualsAndHashCode(callSuper = true)
 public class SwivelTokenCredential extends OneTimeTokenCredential {
-    private static final long serialVersionUID = 361318678073819595L;
+	private static final long serialVersionUID = 361318678073819595L;
+	private boolean voice;
+	private boolean push;
 
-    public SwivelTokenCredential(final String token) {
-        super(token);
-    }
+	public SwivelTokenCredential(final String token, boolean useVoice, boolean usePush) {
+		super(token);
+		voice = useVoice;
+		push = usePush;
+	}
 }

@@ -74,7 +74,7 @@ public class SwivelAuthenticationEventExecutionPlanConfiguration {
     @RefreshScope
     public MultifactorAuthenticationProvider swivelMultifactorAuthenticationProvider() {
         val swivel = this.casProperties.getAuthn().getMfa().getSwivel();
-        val p = new SwivelMultifactorAuthenticationProvider(swivel.getSwivelUrl());
+        val p = new SwivelMultifactorAuthenticationProvider(swivel.getSwivelUrl(), swivel.isIgnoreSslErrors());
         p.setBypassEvaluator(swivelBypassEvaluator.getIfAvailable());
         p.setFailureMode(swivel.getFailureMode());
         p.setOrder(swivel.getRank());

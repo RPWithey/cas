@@ -93,6 +93,10 @@ public class SwivelConfiguration implements CasWebflowExecutionPlanConfigurer {
     @Qualifier("warnCookieGenerator")
     private ObjectProvider<CookieGenerator> warnCookieGenerator;
 
+	private SwivelMultifactorProperties getSwivelProperties() {
+		return casProperties.getAuthn().getMfa().getSwivel();
+	}
+
     @Bean
     public FlowDefinitionRegistry swivelAuthenticatorFlowRegistry() {
         val builder = new FlowDefinitionRegistryBuilder(this.applicationContext, this.flowBuilderServices);
@@ -122,11 +126,40 @@ public class SwivelConfiguration implements CasWebflowExecutionPlanConfigurer {
             applicationEventPublisher, applicationContext);
     }
 
-    @Bean
-    public SwivelTuringImageGeneratorController swivelTuringImageGeneratorController() {
-        val swivel = this.casProperties.getAuthn().getMfa().getSwivel();
-        return new SwivelTuringImageGeneratorController(swivel);
-    }
+	@Bean
+	public SwivelBypassController swivelBypassController() {
+		return new SwivelBypassController(getSwivelProperties());
+	}
+
+	@Bean
+	public SwivelMessageGeneratorController swivelMessageGeneratorController() {
+		return new SwivelMessageGeneratorController(getSwivelProperties());
+	}
+
+	@Bean
+	public SwivelPinpadImageGeneratorController swivelPinpadImageGeneratorController() {
+		return new SwivelPinpadImageGeneratorController(getSwivelProperties());
+	}
+
+	@Bean
+	public SwivelPushController swivelPushController() {
+		return new SwivelPushController(getSwivelProperties());
+	}
+
+	@Bean
+	public SwivelSessionGeneratorController swivelSessionGeneratorController() {
+		return new SwivelSessionGeneratorController(getSwivelProperties());
+	}
+
+	@Bean
+	public SwivelTuringImageGeneratorController swivelTuringImageGeneratorController() {
+		return new SwivelTuringImageGeneratorController(getSwivelProperties());
+	}
+
+	@Bean
+	public SwivelUserRightsController swivelUserRightsController() {
+		return new SwivelUserRightsController(getSwivelProperties());
+	}
 
     @Override
     public void configureWebflowExecutionPlan(final CasWebflowExecutionPlan plan) {
